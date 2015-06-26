@@ -12,14 +12,43 @@ import javax.swing.JTextArea;
  *
  * @author Bassel Bakr
  */
+// Matrix class will represent any matrix
 public class Matrix
 {
 
-    int rows, columns;
+    /* 'rows' => number of rows & 'columns' => number of columns
+     * (short) data type was used instead of (double) and (float) as rows and columns can't be fractions
+     * (int & long) data types weren't use either because they're too big, 4 bytes and 8 bytes respectivly.
+     * (short) is 16-bit type i.e. 2 bytes and ranges between -32768 and 32767 (-2^15 and 2^15-1)
+     *
+     * The leftmost bit in (short, int & long) is used to distinguish between positive and negative values:
+     * 0 000 0000 0000 0000 =>  0
+     * 0 000 0000 0000 0001 =>  1
+     * 1 111 1111 1111 1111 => -1
+     *
+     * How to get negative number's bit representation:
+     * (-x) = reversed bits of (x) + 1
+     *  4 = 0 ... 0100
+     * -4 = reverse -> 1 ... 1011
+     *      add     -> 1 ... 1100
+     *
+     * short x then = 0 000 0000 0000 0100
+     - x then = 1 111 1111 1111 1100
+     */
+    short rows, columns;
+
+    /* 'data' is a multidimensional array where matrix elements will be saved
+     * First dimension for rows and the second for columns
+     * i.e. data[row index][column index]
+     */
     float[][] data;
 
-    public Matrix(int rows, int columns)
+    public Matrix(short rows, short columns)
     {
+        // short shor_variable = (short) int_value --> is called type casting
+        // Basically, we are converting/casting an (int) to (short)
+        // 'this' is used to distinguish between our fields and our parameters.
+        
         this.rows = rows;
         this.columns = columns;
         data = new float[rows][columns];
@@ -28,10 +57,10 @@ public class Matrix
     public Matrix(String matrix)
     {
         String[] rowsArray = matrix.split("\n");
-        rows = rowsArray.length;
-        columns = rowsArray[0].split("[,]").length;
+        rows = (short) rowsArray.length;
+        columns = (short) rowsArray[0].split("[,]").length;
         data = new float[rows][columns];
-        for (int i = 1; i <= rows; i++) {
+        for (short i = 1; i <= rows; i++) {
             insertRow(rowsArray[i - 1], i);
         }
     }
@@ -40,7 +69,7 @@ public class Matrix
     public Matrix clone()
     {
         Matrix x = new Matrix(rows, columns);
-        for (int i = 1; i <= rows; i++) {
+        for (short i = 1; i <= rows; i++) {
             x.insertRow(Arrays.toString(getRow(i)), i);
         }
         return x;
@@ -59,8 +88,8 @@ public class Matrix
     public static Matrix transpose(Matrix x)
     {
         Matrix xTranspose = new Matrix(x.columns, x.rows);
-        for (int i = 1; i <= x.rows; i++) {
-            for (int j = 1; j <= x.getRow(i).length; j++) {
+        for (short i = 1; i <= x.rows; i++) {
+            for (short j = 1; j <= x.getRow(i).length; j++) {
                 xTranspose.insert(x.getRow(i)[j - 1], j, i);
             }
         }
@@ -74,10 +103,10 @@ public class Matrix
         }
         Matrix x = new Matrix(a.rows, b.columns);
         float datum = 0;
-        for (int i = 1; i <= a.rows; i++) {
-            for (int j = 1; j <= b.columns; j++) {
+        for (short i = 1; i <= a.rows; i++) {
+            for (short j = 1; j <= b.columns; j++) {
                 try {
-                    int k = 1;
+                    short k = 1;
                     float f;
                     while ((f = a.get(i, k) * b.get(k, j)) != ~0) {
                         //System.out.printf("a[%d,%d] * b[%d,%d] = %f * %f = %f\n", i, k, k, j, a.get(i, k), b.get(k, j), f);
@@ -95,7 +124,7 @@ public class Matrix
         return x;
     }
 
-    public Matrix add(float datum, int row, int column)
+    public Matrix add(float datum, short row, short column)
     {
         data[row - 1][column - 1] = get(row, column) + datum;
         return this;
@@ -109,11 +138,11 @@ public class Matrix
         float value = 1;
         Matrix y = x.clone();
 
-        for (int i = 1; i <= y.columns; i++) {
+        for (short i = 1; i <= y.columns; i++) {
             value *= y.get(i, i);
             y.divideRow(y.get(i, i), i);
             float[] tmp = y.getRow(i);
-            for (int j = 1; j <= y.rows; j++) {
+            for (short j = 1; j <= y.rows; j++) {
                 if (i == j) {
                     continue;
                 }
@@ -134,10 +163,10 @@ public class Matrix
         }
         Matrix y = x.clone();
 
-        for (int i = 1; i <= y.rows; i++) {
+        for (short i = 1; i <= y.rows; i++) {
             y.divideRow(y.get(i, i), i);
             float[] tmp = y.getRow(i);
-            for (int j = 1; j <= y.rows; j++) {
+            for (short j = 1; j <= y.rows; j++) {
                 if (i == j) {
                     continue;
                 }
@@ -158,13 +187,13 @@ public class Matrix
         float value = 1;
         Matrix y = x.clone();
 
-        for (int i = 1; i <= y.rows; i++) {
+        for (short i = 1; i <= y.rows; i++) {
             area.append(String.format("Divide row number (%d) by (%s):\n\n", i, toFraction(y.get(i, i))));
             value *= y.get(i, i);
             y.divideRow(y.get(i, i), i);
             area.append(y.toString());
             float[] tmp = y.getRow(i);
-            for (int j = 1; j <= y.rows; j++) {
+            for (short j = 1; j <= y.rows; j++) {
                 if (i == j) {
                     continue;
                 }
@@ -182,39 +211,36 @@ public class Matrix
                 area.append(y.toString());
             }
 
-            //area.append(String.format("Restore row number (%d):\n\n", y.rows));
-            //y.multiplyRow(value, y.rows);
-            //area.append(y.toString());
         }
 
         return y;
     }
 
-    public Matrix insert(float datum, int row, int column)
+    public Matrix insert(float datum, short row, short column)
     {
         data[row - 1][column - 1] = datum;
         return this;
     }
 
-    public Matrix insertColumn(String datum, int column)
+    public Matrix insertColumn(String datum, short column)
     {
         String[] values = datum.replace('[', ' ').replace(']', ' ').split("[,]");
-        for (int i = 1; i <= rows; i++) {
+        for (short i = 1; i <= rows; i++) {
             insert(fromFraction(values[i - 1]), i, column);
         }
         return this;
     }
 
-    public Matrix insertRow(String datum, int row)
+    public Matrix insertRow(String datum, short row)
     {
         String[] values = datum.replace('[', ' ').replace(']', ' ').split("[,]");
-        for (int i = 1; i <= columns; i++) {
+        for (short i = 1; i <= columns; i++) {
             insert(fromFraction(values[i - 1]), row, i);
         }
         return this;
     }
 
-    public Matrix addToRow(float[] values, int row)
+    public Matrix addToRow(float[] values, short row)
     {
         for (int i = 1; i <= columns; i++) {
             data[row - 1][i - 1] += values[i - 1];
@@ -222,7 +248,7 @@ public class Matrix
         return this;
     }
 
-    public Matrix addToColumn(float[] values, int column)
+    public Matrix addToColumn(float[] values, short column)
     {
         for (int i = 1; i <= columns; i++) {
             data[i - 1][column - 1] += values[i - 1];
@@ -230,7 +256,7 @@ public class Matrix
         return this;
     }
 
-    public Matrix remFromRow(float[] values, int row)
+    public Matrix remFromRow(float[] values, short row)
     {
         for (int i = 1; i <= columns; i++) {
             data[row - 1][i - 1] -= values[i - 1];
@@ -238,7 +264,7 @@ public class Matrix
         return this;
     }
 
-    public Matrix remFromColumn(float[] values, int column)
+    public Matrix remFromColumn(float[] values, short column)
     {
         for (int i = 1; i <= columns; i++) {
             data[i - 1][column - 1] -= values[i - 1];
@@ -246,7 +272,7 @@ public class Matrix
         return this;
     }
 
-    public Matrix divideRow(float num, int row)
+    public Matrix divideRow(float num, short row)
     {
         for (int i = 1; i <= columns; i++) {
             data[row - 1][i - 1] /= num;
@@ -254,7 +280,7 @@ public class Matrix
         return this;
     }
 
-    public Matrix divideColumn(float num, int column)
+    public Matrix divideColumn(float num, short column)
     {
         for (int i = 1; i <= rows; i++) {
             data[i - 1][column - 1] /= num;
@@ -262,7 +288,7 @@ public class Matrix
         return this;
     }
 
-    public Matrix multiplyRow(float num, int row)
+    public Matrix multiplyRow(float num, short row)
     {
         for (int i = 1; i <= columns; i++) {
             data[row - 1][i - 1] *= num;
@@ -270,7 +296,7 @@ public class Matrix
         return this;
     }
 
-    public Matrix multiplyColumn(float num, int column)
+    public Matrix multiplyColumn(float num, short column)
     {
         for (int i = 1; i <= rows; i++) {
             data[i - 1][column - 1] *= num;
@@ -278,13 +304,13 @@ public class Matrix
         return this;
     }
 
-    public Matrix zero(int row, int column)
+    public Matrix zero(short row, short column)
     {
         data[row - 1][column - 1] = 0;
         return this;
     }
 
-    public float get(int row, int column)
+    public float get(short row, short column)
     {
         if (row < 1
                 || column < 1
@@ -295,10 +321,10 @@ public class Matrix
         return data[row - 1][column - 1];
     }
 
-    public float[] getColumn(int column)
+    public float[] getColumn(short column)
     {
         float[] c = new float[rows];
-        for (int i = 0; i < rows; i++) {
+        for (short i = 0; i < rows; i++) {
             c[i] = data[column - 1][i];
         }
         return c;
@@ -307,7 +333,7 @@ public class Matrix
     public float[] getRow(int row)
     {
         float[] r = new float[columns];
-        for (int i = 0; i < columns; i++) {
+        for (short i = 0; i < columns; i++) {
             r[i] = data[row - 1][i];
         }
         return r;
@@ -332,7 +358,7 @@ public class Matrix
         StringBuilder sb = new StringBuilder("");
         if (d < 0) {
             sb.append("-");
-            d = -d;
+            d *= -1;
         }
         long l = (long) d;
         if (l != 0) {
@@ -361,8 +387,8 @@ public class Matrix
     public String toString()
     {
         StringBuilder sb = new StringBuilder();
-        for (int i = 1; i <= rows; i++) {
-            for (int j = 1; j <= columns; j++) {
+        for (short i = 1; i <= rows; i++) {
+            for (short j = 1; j <= columns; j++) {
                 sb.append(get(i, j) == 0 ? 0 : toFraction(get(i, j)))
                         .append("\t");
             }
